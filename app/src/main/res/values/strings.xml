@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">AircraftWar2024</string>
+    <string name="auther_name">220110626-***</string>
+    <string name="sound_on">开启音乐</string>
+    <string name="sound_off">关闭音乐</string>
+    <string name="game_single">单人游戏</string>
+    <string name="offline_game">单机模式难度选择</string>>
+    <string name="easy_mod">简单模式</string>
+    <string name="normal_mod">普通模式</string>
+    <string name="difficult_mod">困难模式</string>
+</resources>
