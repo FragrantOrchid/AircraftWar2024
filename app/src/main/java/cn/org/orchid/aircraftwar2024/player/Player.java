@@ -2,31 +2,33 @@ package cn.org.orchid.aircraftwar2024.player;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
+import java.util.UUID;
 
 public class Player implements Comparable<Player>, Serializable {
-    private String id;
-    private Date date;
-    private int score;
+    private Map<String,Object> player;
     public Player(String id, Date date, int score) {
-        this.id = id;
-        this.date = date;
-        this.score = score;
-    }
-    public void setId(String id) {
-        this.id = id;
+        player.put("id",id);
+        player.put("date",date);
+        player.put("score",score);
+        player.put("uuid", UUID.randomUUID();
     }
     public String getPlayerId() {
-        return id;
+        return (String) player.get("id");
     }
     @Override
     public int compareTo(Player o) {
-        return Integer.compare(o.getScore(), score);
-
+            return Integer.compare(o.getScore(), (int) player.get("score"));
     }
-    public Date getTime() {
-        return date;
+    public Date getDate() {
+
+        return (Date) player.get("date");
     }
     public int getScore() {
-        return score;
+        return (int) player.get("score");
+    }
+
+    public UUID getUUID(){
+        return (UUID)player.get("uuid");
     }
 }

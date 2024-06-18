@@ -111,6 +111,9 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
     private boolean gameOverFlag = false;
     private int score = 0;
 
+    //用于游戏结束后传递消息的handler
+    private Handler handler;
+
 
 
 
@@ -143,9 +146,8 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
     private final EnemyFactory bossEnemyFactory;
     private final Random random = new Random();
 
-    private Handler handler;
 
-    public BaseGame(Context context){
+    public BaseGame(Context context,Handler handler){
         super(context);
 
         mbLoop = true;
@@ -153,8 +155,7 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         mSurfaceHolder = this.getHolder();
         mSurfaceHolder.addCallback(this);
 
-        //handler传递回主线程
-        handler = new Handler(Looper.getMainLooper());
+
 
         this.setFocusable(true);
         ImageManager.initImage(context);
@@ -173,6 +174,9 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         bossEnemyFactory = new BossFactory();
 
         heroController();
+
+        //传入的handler存入
+        this.handler = handler;
     }
     private void heroShootAction() {
         // 英雄射击
@@ -319,7 +323,7 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
 
 
     private boolean timeCountAndNewCycleJudge() {
-        Log.v("timeCountAndNewCycleJudge","in");
+        //Log.v("timeCountAndNewCycleJudge","in");
         cycleTime += timeInterval;
         if (cycleTime >= cycleDuration && cycleTime - timeInterval < cycleTime) {
             // 跨越到新的周期
@@ -426,9 +430,15 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
             gameOverFlag = true;
             mbLoop = false;
             Log.i(TAG, "heroAircraft is not Valid");
-            //surfaceDestroyed(mSurfaceHolder);
+            surfaceDestroyed(mSurfaceHolder);
 
             this.setFocusable(false);
+            //传回消息
+            Message msg = Message.obtain();
+            msg.what = 1;
+            msg.obj = score;
+            handler.sendMessage(msg);
+            Log.i(TAG,"send message to Activity");
 
         }
 
@@ -524,6 +534,7 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
             this.action();
             draw();
         }
+        /*
         Canvas canvas = mSurfaceHolder.lockCanvas();
         if(canvas != null) {
             canvas.drawColor(Color.BLACK);
@@ -531,6 +542,8 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
             surfaceChanged(mSurfaceHolder, PixelFormat.RGBA_8888,0,0);
 
         }
+        */
+
         //TODO返回逻辑
 
     }

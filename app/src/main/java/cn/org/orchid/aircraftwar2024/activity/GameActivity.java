@@ -18,6 +18,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -33,6 +34,7 @@ import cn.org.orchid.aircraftwar2024.game.BaseGame;
 import cn.org.orchid.aircraftwar2024.game.EasyGame;
 import cn.org.orchid.aircraftwar2024.game.HardGame;
 import cn.org.orchid.aircraftwar2024.game.MediumGame;
+import cn.org.orchid.aircraftwar2024.player.Player;
 import cn.org.orchid.aircraftwar2024.player.PlayerDaoImpl;
 
 
@@ -43,6 +45,27 @@ public class GameActivity extends AppCompatActivity {
 
     boolean sound = false;
     public static int screenWidth,screenHeight;
+
+    //Handle传递消息
+    private final Handler handler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message message) {
+            //game结束，传回结果
+            if (message.what == 1) {
+                Log.v("message", "getmessage");
+
+                int score = (int) message.obj;
+                Log.v("message","score is"+score);
+                setContentView(R.layout.activity_record);
+                try {
+                    showList();
+                } catch (IOException | ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                inputHard(score);
+            }
+        }
+    };
 
 
     @Override
@@ -56,17 +79,17 @@ public class GameActivity extends AppCompatActivity {
             sound = getIntent().getBooleanExtra("sound",false);
         }
 
-        /*TODO:根据用户选择的难度加载相应的游戏界面*/
+        /*根据用户选择的难度加载相应的游戏界面*/
         BaseGame baseGameView = null;
         switch (gameType) {
             case 1 :
-                baseGameView = new EasyGame(this);
+                baseGameView = new EasyGame(this,handler);
                 break;
             case 2 :
-                baseGameView = new MediumGame(this);
+                baseGameView = new MediumGame(this,handler);
                 break;
             case 3 :
-                baseGameView = new HardGame(this);
+                baseGameView = new HardGame(this,handler);
                 break;
             default:
                 break;
@@ -94,29 +117,13 @@ public class GameActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
-    private final Handler handler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(Message message) {
-            switch (message.what) {
-                //game结束，传回结果
-                case 1 :
-                    Log.v("message","getmessage");
-                    setContentView(R.layout.activity_record);
-                    int score = (int)message.obj;
-                    try {
-                        showList();
-                    } catch (IOException | ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
-                    inputHard(score);
-            }
-        }
-    };
+
     /*
     暂时硬编码为test
      */
+    /*
     private void inputHard(int score) {
-        PlayerDaoImpl playerDao = new PlayerDaoImpl();
+        PlayerDaoImpl playerDao = new PlayerDaoImpl(gameType);
         try {
             playerDao.loadAll();
         } catch (IOException | ClassNotFoundException e) {
@@ -139,6 +146,8 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+     */
+    /*
     private void showInputAlert(int score) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("请输入id");
@@ -149,7 +158,7 @@ public class GameActivity extends AppCompatActivity {
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                PlayerDaoImpl playerDao = new PlayerDaoImpl();
+                PlayerDaoImpl playerDao = new PlayerDaoImpl(gameType);
                 try {
                     playerDao.loadAll();
                 } catch (IOException | ClassNotFoundException e) {
@@ -182,12 +191,29 @@ public class GameActivity extends AppCompatActivity {
         dialog.show();
     }
 
+     */
+
     private void showList() throws IOException, ClassNotFoundException {
-        PlayerDaoImpl playerDao = new PlayerDaoImpl();
+        PlayerDaoImpl playerDao = new PlayerDaoImpl(gameType);
         playerDao.loadAll();
         ArrayList<Map<String, Object>> listitem = new ArrayList<Map<String, Object>>();
         Map<String, Object> map = null;
         List<Map<String, Object>> players = playerDao.getAllPlayers();
+        //获得Layout里面的ListView
+        ListView listView = (ListView) findViewById(R.id.PlayerList);
+        //生成适配器的Item和动态数组对应的元素
+        SimpleAdapter listItemAdapter = new SimpleAdapter(
+          this,
+                players,
+                R.layout.listitem,
+                new String[]{"rank","id","score","date"},
+                new int[]{R.id.rank,R.id.id,R.id.score,R.id.date}
+        );
+        listView.setAdapter(listItemAdapter);
+
+
+
+        /*
         int rank = 0;
         for(Map<String,Object> player : players) {
             rank++;
@@ -215,6 +241,8 @@ public class GameActivity extends AppCompatActivity {
 
             }
         });
+        */
+
 
 
 
@@ -226,9 +254,12 @@ public class GameActivity extends AppCompatActivity {
     */
 
 
-    private List<Map<String,Object>> getPlayerData() {
+    private List<Map<String,Object>> getPlayerData() throws IOException, ClassNotFoundException {
         ArrayList<Map<String, Object>> listitem = new ArrayList<Map<String, Object>>();
         Map<String, Object> map = new HashMap<String, Object>();
+        PlayerDaoImpl playerDaoImpl = new PlayerDaoImpl(gameType);
+        playerDaoImpl.loadAll();
+        //TODO 需要调用order后转换形式
         return listitem;
     }
 }
