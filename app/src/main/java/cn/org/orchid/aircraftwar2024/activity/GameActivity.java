@@ -7,6 +7,7 @@ import static com.google.android.material.internal.ContextUtils.getActivity;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -105,13 +106,13 @@ public class GameActivity extends AppCompatActivity {
         BaseGame baseGameView = null;
         switch (gameType) {
             case 1 :
-                baseGameView = new EasyGame(this,handler);
+                baseGameView = new EasyGame(this,handler,sound);
                 break;
             case 2 :
-                baseGameView = new MediumGame(this,handler);
+                baseGameView = new MediumGame(this,handler,sound);
                 break;
             case 3 :
-                baseGameView = new HardGame(this,handler);
+                baseGameView = new HardGame(this,handler,sound);
                 break;
             default:
                 break;
@@ -266,51 +267,7 @@ public class GameActivity extends AppCompatActivity {
 
 
     }
-    /*
-    private void showInputAlert(int score) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("请输入id");
-        final EditText input = new EditText(this);
-        builder.setView(input);
 
-        //积极按钮
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                PlayerDaoImpl playerDao = new PlayerDaoImpl(gameType);
-                try {
-                    playerDao.loadAll();
-                } catch (IOException | ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-                Map<String, Object> player = null;
-                player.put("id",input.getText().toString());
-                player.put("score",score);
-                player.put("date",new Date());
-                playerDao.doAdd(player);
-                try {
-                    playerDao.saveAll();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                try {
-                    showList();
-                } catch (IOException | ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-            }
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-     */
 
     void showDeleteAlert(UUID uuid) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -390,5 +347,11 @@ public class GameActivity extends AppCompatActivity {
             listitem.add(map);
         }
         return listitem;
+    }
+
+    public void beginNextGame(View view){
+        Intent intent = new Intent(GameActivity.this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

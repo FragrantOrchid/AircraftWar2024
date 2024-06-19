@@ -4,10 +4,12 @@
     <string name="sound_on">开启音乐</string>
     <string name="sound_off">关闭音乐</string>
     <string name="game_single">单人游戏</string>
+    <string name="game_online">联机对战</string>
     <string name="offline_game">单机模式难度选择</string>>
     <string name="easy_mod">简单模式</string>
     <string name="medium_mod">普通模式</string>
     <string name="hard_mod">困难模式</string>
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
+    <string name="next_game">重新开始</string>
 </resources>

@@ -29,6 +29,8 @@ import cn.org.orchid.aircraftwar2024.factory.enemy_factory.BossFactory;
 import cn.org.orchid.aircraftwar2024.factory.enemy_factory.EliteFactory;
 import cn.org.orchid.aircraftwar2024.factory.enemy_factory.EnemyFactory;
 import cn.org.orchid.aircraftwar2024.factory.enemy_factory.MobFactory;
+import cn.org.orchid.aircraftwar2024.music.GameMediaPlayer;
+import cn.org.orchid.aircraftwar2024.music.GameSoundPool;
 import cn.org.orchid.aircraftwar2024.supply.AbstractFlyingSupply;
 import cn.org.orchid.aircraftwar2024.supply.BombSupply;
 import java.util.LinkedList;
@@ -113,6 +115,10 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
 
     //用于游戏结束后传递消息的handler
     private Handler handler;
+    //用于标注是否播放声音
+    private boolean sound;
+    private GameMediaPlayer gameMediaPlayer;
+    private GameSoundPool gameSoundPool;
 
 
 
@@ -147,7 +153,9 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
     private final Random random = new Random();
 
 
-    public BaseGame(Context context,Handler handler){
+
+
+    public BaseGame(Context context,Handler handler,Boolean sound){
         super(context);
 
         mbLoop = true;
@@ -156,9 +164,22 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         mSurfaceHolder.addCallback(this);
 
 
-
         this.setFocusable(true);
         ImageManager.initImage(context);
+
+
+        //传入的handler存入
+        this.handler = handler;
+        //传入的sound存入
+        this.sound = sound;
+        gameMediaPlayer = new GameMediaPlayer(context);
+        GameSoundPool.InitGameSoundPool(context,sound);
+        //如果播放音乐则初始化，如果不播放则不需要初始化
+        if(sound) {
+            gameMediaPlayer.InitMediaPlayer();
+        }
+        //开启一般的背景音乐
+        gameMediaPlayer.beginBgm();
 
         // 初始化英雄机
         heroAircraft = HeroAircraft.getHeroAircraft();
@@ -176,8 +197,8 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
 
         heroController();
 
-        //传入的handler存入
-        this.handler = handler;
+
+
     }
     private void heroShootAction() {
         // 英雄射击
@@ -245,6 +266,9 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         if (this.getScore() >= bossScoreThreshold && !this.existBoss()) {
             bossScoreThreshold += bossScoreThreshold;
             res.add(bossEnemyFactory.createEnemyAircraft(bossLevel));
+            //暂停背景音乐，播放boss音乐
+            gameMediaPlayer.pauseBgm();
+            gameMediaPlayer.beginBossBgm();
         }
         return res;
     }
@@ -386,10 +410,17 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
                     // 敌机损失一定生命值
                     enemyAircraft.decreaseHp(bullet.getPower());
                     bullet.vanish();
+                    //子弹击中音乐
+                    GameSoundPool.getGameSoundPool().playBulletHitSound();
                     if (enemyAircraft.notValid()) {
                         //获得分数，产生道具补给
                         score += enemyAircraft.score();
                         flyingSupplies.addAll(enemyAircraft.generateSupplies());
+                        //如果boss机坠毁，停止boss音乐，继续背景音乐
+                        if(enemyAircraft.getClass() == BossEnemy.class) {
+                            gameMediaPlayer.stopBossBgm();
+                            gameMediaPlayer.continueBgm();
+                        }
                     }
                 }
                 // 英雄机 与 敌机 相撞，均损毁
@@ -432,7 +463,15 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
             mbLoop = false;
             Log.i(TAG, "heroAircraft is not Valid");
             surfaceDestroyed(mSurfaceHolder);
+            //英雄机坠毁，所有背景音乐停止
+            gameMediaPlayer.stopAndReleaseAll();
+            //播放结束音乐
+            if(sound) {
+                GameSoundPool.getGameSoundPool().playGameOverSound();
+            }
 
+            GameSoundPool.getGameSoundPool().vanish();
+            //取消焦点
             this.setFocusable(false);
             //传回消息
             Message msg = Message.obtain();
@@ -535,18 +574,6 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
             this.action();
             draw();
         }
-        /*
-        Canvas canvas = mSurfaceHolder.lockCanvas();
-        if(canvas != null) {
-            canvas.drawColor(Color.BLACK);
-            mSurfaceHolder.unlockCanvasAndPost(canvas);
-            surfaceChanged(mSurfaceHolder, PixelFormat.RGBA_8888,0,0);
-
-        }
-        */
-
-        //TODO返回逻辑
-
     }
 
 }

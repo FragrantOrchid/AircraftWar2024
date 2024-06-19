@@ -4,6 +4,8 @@ package cn.org.orchid.aircraftwar2024.supply;
 import java.util.LinkedList;
 import java.util.List;
 
+import cn.org.orchid.aircraftwar2024.music.GameSoundPool;
+
 /**
  * 炸弹道具，自动触发
  * <p>
@@ -22,7 +24,10 @@ public class BombSupply extends AbstractFlyingSupply {
 
     @Override
     public void activate() {
+
         System.out.println("BombSupply active");
+
+        GameSoundPool.getGameSoundPool().playBombExplosionSound();
     }
 
 }

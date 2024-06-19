@@ -2,6 +2,7 @@ package cn.org.orchid.aircraftwar2024.supply;
 
 
 import cn.org.orchid.aircraftwar2024.aircraft.HeroAircraft;
+import cn.org.orchid.aircraftwar2024.music.GameSoundPool;
 
 /**
  * 加血道具：增加HP值。
@@ -20,6 +21,7 @@ public class HpSupply extends AbstractFlyingSupply {
     public void activate() {
         HeroAircraft.getHeroAircraft().increaseHp(increasedHp);
         System.out.println("HpSupply active");
+        GameSoundPool.getGameSoundPool().playGetSupplySound();
     }
 
 }
