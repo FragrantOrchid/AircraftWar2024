@@ -333,6 +333,12 @@ public class GameActivity extends AppCompatActivity {
                     throw new RuntimeException(e);
                 }
                 try {
+                    playerDao.loadAll();
+                } catch (IOException | ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+
+                try {
                     showList();
                 } catch (IOException | ClassNotFoundException e) {
                     throw new RuntimeException(e);

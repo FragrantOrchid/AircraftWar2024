@@ -44,7 +44,7 @@ public class PlayerDaoImpl implements PlayerDao{
     @Override
     public Player findByUUId(UUID uuid) {
         for(Player player : players){
-            if(player.getUUID() == uuid){
+            if(player.getUUID().equals(uuid)){
                 return player;
             }
         }
@@ -64,8 +64,12 @@ public class PlayerDaoImpl implements PlayerDao{
 
     @Override
     public void doDelete(UUID uuid) {
+        Log.v("PlayerDaoImpl","now the num is"+players.size());
+        Log.v("PlayerDaoImpl","try do delete"+uuid.toString());
         Player player = findByUUId(uuid);
-        players.remove(player);
+        boolean success = players.remove(player);
+        Log.v("PlayerDaoImpl","success"+success);
+        Log.v("PlayerDaoImpl","now the num is"+players.size());
     }
     public void saveAll() throws IOException {
         Log.v("Dao","saveall");
