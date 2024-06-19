@@ -1,5 +1,6 @@
 package cn.org.orchid.aircraftwar2024.player;
 
+import android.content.Context;
 import android.util.Log;
 
 import java.io.File;
@@ -20,19 +21,21 @@ import java.util.UUID;
 public class PlayerDaoImpl implements PlayerDao{
     private List<Player> players = null;
     int gameType;
-    File file;
-    public PlayerDaoImpl(int gameType) {
+    Context context;
+    String fileName;
+    public PlayerDaoImpl(Context context, int gameType) {
         this.gameType = gameType;
+        this.context = context;
         //1:easy;2:medium;3:hard
         switch (gameType) {
             case 1:
-                file = new File("easyPlayers.txt");
+                fileName = "easyPlayers.txt";
                 break;
             case 2:
-                file = new File("mediumPlayers.txt");
+                fileName = "mediumPlayers.txt";
                 break;
             case 3:
-                file = new File("hardPlayers.txt");
+                fileName = "hardPlayers.txt";
                 break;
             default:
                 break;
@@ -65,29 +68,35 @@ public class PlayerDaoImpl implements PlayerDao{
         players.remove(player);
     }
     public void saveAll() throws IOException {
-        //创建文件输出流
-        FileOutputStream fos = new FileOutputStream(file);
+        Log.v("Dao","saveall");
+        File file = new File(context.getFilesDir(),fileName);
+        if(!file.exists()){
+            file.createNewFile();
+        }
+        //创建文件输出流，用构建时得到的context
+        FileOutputStream fos = context.openFileOutput(fileName,Context.MODE_PRIVATE);
         //创建对象输出流
         ObjectOutputStream oos =new ObjectOutputStream(fos);
         //保存对象
         oos.writeObject(players);
+
+
     }
     public void loadAll() throws IOException, ClassNotFoundException {
-        if(file.length() > 0) {
-            FileInputStream fis = new FileInputStream(file);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            players = (List<Player>) ois.readObject();
-        } else {
+        Log.v("Dao","loadall");
+        File file = new File(context.getFilesDir(),fileName);
+        if(!file.exists()){
+            file.createNewFile();
             Log.v("Dao","no data");
+            players = new ArrayList<Player>();
+        } else {
+            FileInputStream fis = context.openFileInput(fileName);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            players = (ArrayList<Player>) ois.readObject();
         }
     }
     public void Order() {
-        //TODO 完善order代码
-
-
-
-
-
+        Collections.sort(players);
     }
 
 }

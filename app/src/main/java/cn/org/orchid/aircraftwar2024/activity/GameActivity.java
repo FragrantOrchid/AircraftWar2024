@@ -4,6 +4,7 @@ package cn.org.orchid.aircraftwar2024.activity;
 
 import static com.google.android.material.internal.ContextUtils.getActivity;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -54,18 +55,40 @@ public class GameActivity extends AppCompatActivity {
             if (message.what == 1) {
                 Log.v("message", "getmessage");
 
+                //该场比赛数据存入本地
                 int score = (int) message.obj;
                 Log.v("message","score is"+score);
+                savePlayer(score);
+
+
                 setContentView(R.layout.activity_record);
                 try {
                     showList();
                 } catch (IOException | ClassNotFoundException e) {
                     throw new RuntimeException(e);
                 }
-                inputHard(score);
+                //TODO 应当删除这个message以避免重复触发
             }
         }
     };
+    public void savePlayer(int score){
+        PlayerDaoImpl playerDao = new PlayerDaoImpl(this,gameType);
+        try {
+            playerDao.loadAll();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        playerDao.doAdd(new Player(
+                "test",
+                new Date(),
+                score
+        ));
+        try {
+            playerDao.saveAll();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
     @Override
@@ -194,58 +217,17 @@ public class GameActivity extends AppCompatActivity {
      */
 
     private void showList() throws IOException, ClassNotFoundException {
-        PlayerDaoImpl playerDao = new PlayerDaoImpl(gameType);
-        playerDao.loadAll();
-        ArrayList<Map<String, Object>> listitem = new ArrayList<Map<String, Object>>();
-        Map<String, Object> map = null;
-        List<Map<String, Object>> players = playerDao.getAllPlayers();
         //获得Layout里面的ListView
         ListView listView = (ListView) findViewById(R.id.PlayerList);
         //生成适配器的Item和动态数组对应的元素
         SimpleAdapter listItemAdapter = new SimpleAdapter(
           this,
-                players,
+                getPlayerData(),
                 R.layout.listitem,
                 new String[]{"rank","id","score","date"},
                 new int[]{R.id.rank,R.id.id,R.id.score,R.id.date}
         );
         listView.setAdapter(listItemAdapter);
-
-
-
-        /*
-        int rank = 0;
-        for(Map<String,Object> player : players) {
-            rank++;
-            map = new HashMap<String, Object>();
-            map.put("rank",rank);
-            map.put("id",(String)player.get("id"));
-            map.put("score",player.get("score"));
-            map.put("date",player.get("date"));
-            listitem.add(map);
-        }
-        ListView list = (ListView) findViewById(R.id.PlayerList);
-        SimpleAdapter listItemAdapter = new SimpleAdapter(
-                this,
-                listitem,
-                R.layout.listitem,
-                new String[]{"rank","id","score","time"},
-                new int[]{R.id.rank,R.id.id,R.id.score,R.id.date});
-        list.setAdapter(listItemAdapter);
-
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-                Map<String, Object> clkmap = (Map<String, Object>) arg0.getItemAtPosition(arg2);
-                String text = "删除"+clkmap.get("id").toString();
-
-            }
-        });
-        */
-
-
-
-
     }
     /*
     void showDeleteAlert(Map<String, Object>) {
@@ -255,11 +237,25 @@ public class GameActivity extends AppCompatActivity {
 
 
     private List<Map<String,Object>> getPlayerData() throws IOException, ClassNotFoundException {
-        ArrayList<Map<String, Object>> listitem = new ArrayList<Map<String, Object>>();
-        Map<String, Object> map = new HashMap<String, Object>();
-        PlayerDaoImpl playerDaoImpl = new PlayerDaoImpl(gameType);
+        PlayerDaoImpl playerDaoImpl = new PlayerDaoImpl(this,gameType);
         playerDaoImpl.loadAll();
-        //TODO 需要调用order后转换形式
+        //调用order后转换形式
+        playerDaoImpl.Order();
+        List<Player> players = playerDaoImpl.getAllPlayers();
+        //建立转换后的结构
+        ArrayList<Map<String, Object>> listitem = new ArrayList<Map<String, Object>>();
+        Map<String, Object> map = null;
+        int rank = 0;
+        for(Player player : players){
+            map = new HashMap<String, Object>();
+            rank++;
+            map.put("rank",rank);
+            map.put("id",player.getPlayerId());
+            map.put("score",player.getScore());
+            map.put("date",player.getDate());
+            map.put("uuid",player.getUUID());
+            listitem.add(map);
+        }
         return listitem;
     }
 }
