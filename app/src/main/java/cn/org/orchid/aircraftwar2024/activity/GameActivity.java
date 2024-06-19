@@ -4,6 +4,7 @@ package cn.org.orchid.aircraftwar2024.activity;
 
 import static com.google.android.material.internal.ContextUtils.getActivity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 
 import androidx.annotation.NonNull;
@@ -29,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import cn.org.orchid.aircraftwar2024.R;
 import cn.org.orchid.aircraftwar2024.game.BaseGame;
@@ -54,20 +57,15 @@ public class GameActivity extends AppCompatActivity {
             //game结束，传回结果
             if (message.what == 1) {
                 Log.v("message", "getmessage");
-
                 //该场比赛数据存入本地
                 int score = (int) message.obj;
                 Log.v("message","score is"+score);
                 savePlayer(score);
-
-
-                setContentView(R.layout.activity_record);
                 try {
                     showList();
                 } catch (IOException | ClassNotFoundException e) {
                     throw new RuntimeException(e);
                 }
-                //TODO 应当删除这个message以避免重复触发
             }
         }
     };
@@ -93,6 +91,7 @@ public class GameActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.v("GameActivity","onCreate");
         super.onCreate(savedInstanceState);
 
         getScreenHW();
@@ -216,7 +215,28 @@ public class GameActivity extends AppCompatActivity {
 
      */
 
+    @SuppressLint("SetTextI18n")
     private void showList() throws IOException, ClassNotFoundException {
+        //布局前台化
+        setContentView(R.layout.activity_record);
+        //获取textview
+        TextView textView = findViewById(R.id.PlayerTitle);
+
+        //TODO 动态更改标题
+        switch (gameType) {
+            case 1 :
+                textView.setText(R.string.easy_mod);
+                break;
+            case 2 :
+                textView.setText(R.string.medium_mod);
+                break;
+            case 3 :
+                textView.setText(R.string.hard_mod);
+                break;
+            default:
+                break;
+        }
+
         //获得Layout里面的ListView
         ListView listView = (ListView) findViewById(R.id.PlayerList);
         //生成适配器的Item和动态数组对应的元素
@@ -227,13 +247,112 @@ public class GameActivity extends AppCompatActivity {
                 new String[]{"rank","id","score","date"},
                 new int[]{R.id.rank,R.id.id,R.id.score,R.id.date}
         );
+        //添加并显示
         listView.setAdapter(listItemAdapter);
-    }
-    /*
-    void showDeleteAlert(Map<String, Object>) {
+        //添加单击监听器
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.v("onClick","onceclick");
+                Map<String, Object> clkmap = (Map<String, Object>) adapterView.getItemAtPosition(i);
+                if(clkmap.containsKey("uuid")) {
+                    Log.v("onClick","finduuid");
+                    UUID uuid = (UUID) clkmap.get("uuid");
+                    showDeleteAlert(uuid);
+
+                }
+            }
+        });
+
 
     }
-    */
+    /*
+    private void showInputAlert(int score) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("请输入id");
+        final EditText input = new EditText(this);
+        builder.setView(input);
+
+        //积极按钮
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                PlayerDaoImpl playerDao = new PlayerDaoImpl(gameType);
+                try {
+                    playerDao.loadAll();
+                } catch (IOException | ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                Map<String, Object> player = null;
+                player.put("id",input.getText().toString());
+                player.put("score",score);
+                player.put("date",new Date());
+                playerDao.doAdd(player);
+                try {
+                    playerDao.saveAll();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    showList();
+                } catch (IOException | ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+     */
+
+    void showDeleteAlert(UUID uuid) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("提示");
+        builder.setMessage("确认删除此条记录");
+        //确认按钮
+        builder.setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                PlayerDaoImpl playerDao = new PlayerDaoImpl(GameActivity.this,gameType);
+                try {
+                    playerDao.loadAll();
+                } catch (IOException | ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                playerDao.doDelete(uuid);
+                try {
+                    playerDao.saveAll();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    showList();
+                } catch (IOException | ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                //TODO 未成功删除
+            }
+        });
+        //取消按钮
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+
+    }
+
 
 
     private List<Map<String,Object>> getPlayerData() throws IOException, ClassNotFoundException {
@@ -245,6 +364,14 @@ public class GameActivity extends AppCompatActivity {
         //建立转换后的结构
         ArrayList<Map<String, Object>> listitem = new ArrayList<Map<String, Object>>();
         Map<String, Object> map = null;
+        //标题头
+        map = new HashMap<String, Object>();
+        map.put("rank","rank");
+        map.put("id","id");
+        map.put("score","score");
+        map.put("date","date");
+        listitem.add(map);
+        //表格内容
         int rank = 0;
         for(Player player : players){
             map = new HashMap<String, Object>();

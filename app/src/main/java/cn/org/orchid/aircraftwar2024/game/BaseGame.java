@@ -163,6 +163,7 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         // 初始化英雄机
         heroAircraft = HeroAircraft.getHeroAircraft();
         heroAircraft.setHp(1000);
+        heroAircraft.initIsValid();
 
         enemyAircrafts = new CopyOnWriteArrayList<>();
         heroBullets = new CopyOnWriteArrayList<>();
