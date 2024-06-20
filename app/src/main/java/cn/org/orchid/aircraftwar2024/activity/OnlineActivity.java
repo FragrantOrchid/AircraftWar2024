@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -31,6 +32,9 @@ public class OnlineActivity extends AppCompatActivity {
     boolean sound;
     EasyGame easyGame;
 
+    int lastScore;
+    int enemyLastScore;
+
     private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message message) {
@@ -38,8 +42,8 @@ public class OnlineActivity extends AppCompatActivity {
             if (message.what == 1) {
                 Log.v("message", "getmessage");
                 //该场比赛数据存入本地
-                int score = (int) message.obj;
-                Log.v("message","score is"+score);
+                lastScore = (int) message.obj;
+                Log.v("message","score is"+lastScore);
             }
         }
     };
@@ -128,7 +132,6 @@ public class OnlineActivity extends AppCompatActivity {
                             stage = 2;
                             break;
                         case 308:
-
                             break;
                         case 408:
                             stage = 3;
@@ -141,6 +144,24 @@ public class OnlineActivity extends AppCompatActivity {
                                 throw new RuntimeException(e);
                             }
                             easyGame.setEnemy(score,gameover);
+                            if(gameover && easyGame.getGameOverFlag()) {
+                                stage = 4;
+                            }
+                            break;
+                        case 808:
+                            try {
+                                enemyLastScore = (int) jsonObject.get("score");
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
+                            }
+                            easyGame.setEnemy(enemyLastScore,true);
+                            TextView view = findViewById(R.id.your_score);
+                            view.setText(lastScore);
+                            view = findViewById(R.id.enemy_score);
+                            view.setText(enemyLastScore);
+                            setContentView(R.layout.online_record);
+
+
                             break;
                         default:
                             break;
@@ -180,6 +201,15 @@ public class OnlineActivity extends AppCompatActivity {
                             jsonObject.put("uuid",uuid);
                             jsonObject.put("score",score);
                             jsonObject.put("gameover",gameover);
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+                        break;
+                    case 4:
+                        try {
+                            jsonObject.put("code",708);
+                            jsonObject.put("uuid",uuid);
+                            jsonObject.put("score",lastScore);
                         } catch (JSONException e) {
                             throw new RuntimeException(e);
                         }

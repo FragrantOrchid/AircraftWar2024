@@ -181,6 +181,9 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         this.setFocusable(true);
         ImageManager.initImage(context);
 
+        //初始化无对手
+        withEnemy = false;
+
 
         //传入的handler存入
         this.handler = handler;
@@ -489,15 +492,7 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
                 GameSoundPool.getGameSoundPool().playGameOverSound();
             }
 
-            GameSoundPool.getGameSoundPool().vanish();
-            //取消焦点
-            this.setFocusable(false);
-            //传回消息
-            Message msg = Message.obtain();
-            msg.what = 1;
-            msg.obj = score;
-            handler.sendMessage(msg);
-            Log.i(TAG,"send message to Activity");
+
 
         }
 
@@ -561,15 +556,16 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         paint.setTextSize(50);
         canvas.drawText("SCORE:"+String.valueOf(score),0,50,paint);
         canvas.drawText(String.valueOf("LIFE:"+heroAircraft.getHp()),0,100,paint);
+        if(withEnemy) {
+            canvas.drawText("enemyScore"+String.valueOf(enemyScore),0,100,paint);
+        }
     }
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
         /*TODO*/
         mbLoop = true;
-        //Log.v("action","before action");
-        //action();
-        //Log.v("action","after action");
+
         new Thread(this).start();
 
     }
@@ -589,9 +585,25 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
     @Override
     public void run() {
         /*TODO*/
-        while(mbLoop && !gameOverFlag) {
-            this.action();
-            draw();
+
+        while (true) {
+            if(mbLoop && !gameOverFlag){
+                this.action();
+                draw();
+            } else if (mbLoop) {
+                draw();
+            } else if(gameOverFlag && enemyGameOver) {
+                GameSoundPool.getGameSoundPool().vanish();
+                //取消焦点
+                this.setFocusable(false);
+                //传回消息
+                Message msg = Message.obtain();
+                msg.what = 1;
+                msg.obj = score;
+                handler.sendMessage(msg);
+                Log.i(TAG,"send message to Activity");
+            }
+
         }
     }
 
