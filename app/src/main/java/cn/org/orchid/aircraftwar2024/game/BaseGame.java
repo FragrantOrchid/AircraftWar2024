@@ -36,6 +36,7 @@ import cn.org.orchid.aircraftwar2024.supply.BombSupply;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -151,7 +152,19 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
     private final EnemyFactory eliteEnemyFactory;
     private final EnemyFactory bossEnemyFactory;
     private final Random random = new Random();
+    private UUID uuid;
+    public UUID getUUID(){
+        return uuid;
+    }
 
+    private int enemyScore;
+    private boolean withEnemy;
+    private boolean enemyGameOver;
+    public void setEnemy(int enemyScore,boolean enemyGameOver) {
+        this.enemyScore = enemyScore;
+        this.enemyGameOver = enemyGameOver;
+        withEnemy = true;
+    }
 
 
 
@@ -162,6 +175,7 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         mPaint = new Paint();  //设置画笔
         mSurfaceHolder = this.getHolder();
         mSurfaceHolder.addCallback(this);
+        uuid = UUID.randomUUID();
 
 
         this.setFocusable(true);
@@ -273,7 +287,12 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         return res;
     }
     public int getScore() {
+
         return score;
+    }
+    public boolean getGameOverFlag(){
+
+        return gameOverFlag;
     }
     private boolean existBoss() {
         for (AbstractEnemyAircraft enemyAircraft : enemyAircrafts) {
@@ -575,5 +594,14 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
             draw();
         }
     }
+
+    public void pauseGame() {
+        mbLoop = false;
+    }
+    public void continueGame() {
+        mbLoop = true;
+    }
+
+
 
 }
