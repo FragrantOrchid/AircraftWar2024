@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.RadioButton;
 
@@ -32,5 +33,16 @@ public class MainActivity extends AppCompatActivity{
 
 
     public void beginOnlineGame(View view) {
+        Log.v("beginActivity","beginOnlineGame");
+        boolean sound;
+        RadioButton radioButton = findViewById(R.id.sound_on_button);
+        if(radioButton.isChecked()) {
+            sound = true;
+        } else {
+            sound = false;
+        }
+        Intent intent = new Intent(MainActivity.this, OnlineActivity.class);
+        intent.putExtra("sound",sound);
+        startActivity(intent);
     }
 }

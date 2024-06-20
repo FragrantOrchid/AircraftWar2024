@@ -12,11 +12,11 @@
         android:id="@+id/your_score"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="你的成绩"/>
+        />
     <TextView
         android:id="@+id/enemy_score"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="对手成绩"/>
+        />
 
 </LinearLayout>

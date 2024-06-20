@@ -557,14 +557,15 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         canvas.drawText("SCORE:"+String.valueOf(score),0,50,paint);
         canvas.drawText(String.valueOf("LIFE:"+heroAircraft.getHp()),0,100,paint);
         if(withEnemy) {
-            canvas.drawText("enemyScore"+String.valueOf(enemyScore),0,100,paint);
+            canvas.drawText("enemyScore"+String.valueOf(enemyScore),0,200,paint);
         }
     }
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
         /*TODO*/
-        mbLoop = true;
+        //mbLoop = true;
+        Log.v("BaseGame","set in surfaceCreated");
 
         new Thread(this).start();
 
@@ -588,9 +589,12 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
 
         while (true) {
             if(mbLoop && !gameOverFlag){
+                Log.v("BaseGame","mbloop is"+mbLoop+"now action");
                 this.action();
                 draw();
-            } else if (mbLoop) {
+            } else if(gameOverFlag && !enemyGameOver){
+                draw();
+            }else if (mbLoop) {
                 draw();
             } else if(gameOverFlag && enemyGameOver) {
                 GameSoundPool.getGameSoundPool().vanish();
@@ -608,7 +612,10 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
     }
 
     public void pauseGame() {
+        Log.v("BaseGame","GameWasPaused,now mblooop is"+mbLoop);
         mbLoop = false;
+        Log.v("BaseGame","GameWasPaused,now mblooop is"+mbLoop);
+        //TODO 没暂停下来
     }
     public void continueGame() {
         mbLoop = true;
