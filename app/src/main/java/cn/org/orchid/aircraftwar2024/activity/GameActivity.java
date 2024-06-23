@@ -139,6 +139,7 @@ public class GameActivity extends AppCompatActivity {
     private void showList() throws IOException, ClassNotFoundException {
         //布局前台化
         setContentView(R.layout.activity_record);
+        Log.v("showlist","beginShow");
         //获取textview
         TextView textView = findViewById(R.id.PlayerTitle);
 

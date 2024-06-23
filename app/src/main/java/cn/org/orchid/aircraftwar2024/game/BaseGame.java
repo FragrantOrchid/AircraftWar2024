@@ -480,20 +480,16 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         flyingSupplies.removeIf(AbstractFlyingObject::notValid);
 
         if (heroAircraft.notValid()) {
-
             gameOverFlag = true;
             mbLoop = false;
             Log.i(TAG, "heroAircraft is not Valid");
-            surfaceDestroyed(mSurfaceHolder);
+
             //英雄机坠毁，所有背景音乐停止
             gameMediaPlayer.stopAndReleaseAll();
             //播放结束音乐
             if(sound) {
                 GameSoundPool.getGameSoundPool().playGameOverSound();
             }
-
-
-
         }
 
     }
@@ -581,6 +577,8 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
     public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
         /*TODO*/
         mbLoop = false;
+        //mSurfaceHolder.lockCanvas(null);
+        //mSurfaceHolder.unlockCanvasAndPost(canvas);
     }
 
     @Override
@@ -588,26 +586,47 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
         /*TODO*/
 
         while (true) {
-            if(mbLoop && !gameOverFlag){
-                Log.v("BaseGame","mbloop is"+mbLoop+"now action");
-                this.action();
-                draw();
-            } else if(gameOverFlag && !enemyGameOver){
-                draw();
-            }else if (mbLoop) {
-                draw();
-            } else if(gameOverFlag && enemyGameOver) {
-                GameSoundPool.getGameSoundPool().vanish();
-                //取消焦点
-                this.setFocusable(false);
-                //传回消息
-                Message msg = Message.obtain();
-                msg.what = 1;
-                msg.obj = score;
-                handler.sendMessage(msg);
-                Log.i(TAG,"send message to Activity");
+            if(withEnemy){
+                if(mbLoop && !gameOverFlag){
+                    Log.v("BaseGame","mbloop is"+mbLoop+"now action");
+                    this.action();
+                    draw();
+                } else if(gameOverFlag && !enemyGameOver) {
+                    draw();
+                } else if (mbLoop) {
+                    draw();
+                } else if (gameOverFlag && enemyGameOver) {
+                    GameSoundPool.getGameSoundPool().vanish();
+                    //取消焦点
+                    this.setFocusable(false);
+                    //传回消息
+                    Message msg = Message.obtain();
+                    msg.what = 1;
+                    msg.obj = score;
+                    handler.sendMessage(msg);
+                    Log.i(TAG,"send message to Activity");
+                    surfaceDestroyed(mSurfaceHolder);
+                    break;
+                }
+            }else{
+                if(mbLoop && !gameOverFlag){
+                    Log.v("BaseGame","mbloop is"+mbLoop+"now action");
+                    this.action();
+                    draw();
+                } else if (gameOverFlag) {
+                    GameSoundPool.getGameSoundPool().vanish();
+                    //取消焦点
+                    this.setFocusable(false);
+                    //传回消息
+                    Message msg = Message.obtain();
+                    msg.what = 1;
+                    msg.obj = score;
+                    handler.sendMessage(msg);
+                    Log.i(TAG,"send message to Activity");
+                    surfaceDestroyed(mSurfaceHolder);
+                    break;
+                }
             }
-
         }
     }
 
