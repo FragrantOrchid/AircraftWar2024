@@ -575,10 +575,7 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
 
     @Override
     public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
-        /*TODO*/
         mbLoop = false;
-        //mSurfaceHolder.lockCanvas(null);
-        //mSurfaceHolder.unlockCanvasAndPost(canvas);
     }
 
     @Override
@@ -629,7 +626,6 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
             }
         }
     }
-
     public void pauseGame() {
         Log.v("BaseGame","GameWasPaused,now mblooop is"+mbLoop);
         mbLoop = false;
@@ -639,7 +635,4 @@ public abstract class BaseGame extends SurfaceView implements SurfaceHolder.Call
     public void continueGame() {
         mbLoop = true;
     }
-
-
-
 }
